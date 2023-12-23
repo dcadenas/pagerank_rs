@@ -1,0 +1,30 @@
+[package]
+name = "pagerank_rs"
+version = "0.1.0"
+edition = "2021"
+description = "A Rust library for computing PageRank, optimized for performance and flexibility."
+license = "MIT"
+repository = "https://github.com/dcadenas/pagerank_rs"
+homepage = "https://github.com/dcadenas/pagerank_rs"
+readme = "README.md"
+keywords = ["pagerank", "graph", "network-analysis"]
+categories = ["algorithms", "computing", "science"]
+exclude = [
+    ".github/workflows/rust.yml",
+    ".gitignore",
+    "Cargo.lock",
+    "Cargo.toml.orig",
+    "grcov.yml"
+]
+
+[dependencies]
+float-cmp = "0.9.0"
+rand = "0.8.5"
+rayon = "1.8.0"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "pagerank_benchmark"
+harness = false

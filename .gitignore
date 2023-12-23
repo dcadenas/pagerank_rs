@@ -1,0 +1,26 @@
+/target
+**/Cargo.lock
+**/.cargo
+**/*.rs.bk
+.vscode/
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.DocumentRevisions-V3
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*~
+*.swp
+*.bak
+*.tmp
+*.temp
+*.profraw
+*.json
