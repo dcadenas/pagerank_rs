@@ -12,7 +12,7 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
 
-//// A structure for managing and computing PageRank scores for nodes in a graph.
+/// A structure for managing and computing PageRank scores for nodes in a graph.
 ///
 /// The Pagerank struct supports adding nodes and directed edges, and provides
 /// a method to compute the PageRank scores for all nodes using the PageRank algorithm.

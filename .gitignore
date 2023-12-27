@@ -24,3 +24,4 @@ Desktop.ini
 *.temp
 *.profraw
 *.json
+/data
