@@ -9,6 +9,8 @@ homepage = "https://github.com/dcadenas/pagerank_rs"
 readme = "README.md"
 keywords = ["pagerank", "graph", "network-analysis"]
 categories = ["algorithms", "computing", "science"]
+documentation = "https://github.com/dcadenas/pagerank_rs#readme"
+
 exclude = [
     ".github/workflows/rust.yml",
     ".gitignore",
