@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - Better benchmarks comparing with other libraries
 - Fix toml categories
+- Return result directly
+- Sorted return values
+
 
 ## [0.1.0] - 2023-12-27
 ### Added

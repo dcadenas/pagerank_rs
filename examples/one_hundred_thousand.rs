@@ -28,10 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let mut result = vec![0.0; n as usize];
-    page_rank.rank(0.85, 0.001, |key, val| {
-        result[key as usize] = val;
-    });
+    let _result = page_rank.rank(0.85, 0.001);
     let agent_ready = agent_running.stop()?;
     agent_ready.shutdown();
     Ok(())

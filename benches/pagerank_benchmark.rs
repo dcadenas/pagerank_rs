@@ -81,7 +81,7 @@ fn pagerank_rs_benchmark(c: &mut Criterion) {
                 }
             }
 
-            pagerank.rank(black_box(0.85), black_box(0.01), |_key, _val| {});
+            pagerank.rank(black_box(0.85), black_box(0.01));
             pagerank.clear();
         });
     });

@@ -175,6 +175,7 @@ impl Pagerank {
         new_p.par_iter_mut().for_each(|x| *x /= v_sum);
     }
 
+    #[inline]
     fn calculate_change(p: &[f64], new_p: &[f64]) -> f64 {
         p.iter()
             .zip(new_p)
@@ -198,16 +199,9 @@ impl Pagerank {
     ///
     /// let mut pagerank = Pagerank::new(100);
     /// // ... add links ...
-    /// pagerank.rank(0.85, 1e-6, |node, score| {
-    ///     println!("Node {}: {}", node, score);
-    /// });
-    ///
-    pub fn rank(
-        &mut self,
-        following_prob: f64,
-        tolerance: f64,
-        mut result_func: impl FnMut(usize, f64),
-    ) {
+    /// let result = pagerank.rank(0.85, 1e-6);
+
+    pub fn rank(&mut self, following_prob: f64, tolerance: f64) -> Vec<(usize, f64)> {
         let size = self.key_to_index.len();
         let inverse_of_size = 1.0 / size as f64;
         let t_over_size = (1.0 - following_prob) * inverse_of_size;
@@ -218,19 +212,22 @@ impl Pagerank {
         let mut change = 2.0;
 
         while change > tolerance {
-            // Pass a mutable reference to new_p so that step can modify it directly
             self.step(following_prob, t_over_size, &p, &dangling_nodes, &mut new_p);
             change = Self::calculate_change(&p, &new_p);
-
-            // Swap p and new_p for the next iteration
             std::mem::swap(&mut p, &mut new_p);
         }
 
-        p.into_iter().enumerate().for_each(|(i, p_i)| {
-            if let Some(&key) = self.index_to_key.get(&i) {
-                result_func(key, p_i);
-            }
+        let mut ranked: Vec<_> = p
+            .into_iter()
+            .enumerate()
+            .map(|(i, p_i)| (*self.index_to_key.get(&i).unwrap(), p_i))
+            .collect();
+
+        ranked.par_sort_unstable_by(|a, b| {
+            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
         });
+
+        ranked
     }
 
     pub fn clear(&mut self) {

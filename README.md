@@ -31,9 +31,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let probability_of_following_a_link = 0.85;
     let tolerance = 0.0001;
 
-    graph.rank(probability_of_following_a_link, tolerance, |node_id, rank| {
+    let result = graph.rank(probability_of_following_a_link, tolerance);
+    for (node_id, rank) in result {
         println!("Node {} rank is {}", node_id, rank);
-    });
+    }
 
     Ok(())
 }

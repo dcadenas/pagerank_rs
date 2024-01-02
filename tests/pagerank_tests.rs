@@ -2,7 +2,6 @@
 mod tests {
     use float_cmp::approx_eq;
     use pagerank_rs::Pagerank; // You might need the 'float-cmp' crate for floating-point comparisons
-    use std::cell::Cell;
 
     fn round_to_places(num: f64, places: u32) -> f64 {
         let multiplier = 10f64.powi(places as i32);
@@ -14,20 +13,30 @@ mod tests {
     }
 
     fn assert_rank(page_rank: &mut Pagerank, expected: &[(usize, f64)], tolerance: f64) {
-        for &(id, expected_rank) in expected {
-            let rank_cell = Cell::new(0.0);
-            page_rank.rank(0.85, tolerance, |node_id, node_rank| {
-                if node_id == id {
-                    rank_cell.set(to_percentage(node_rank));
-                }
-            });
+        let mut expected_entries = &expected[..];
+        let result = page_rank.rank(0.85, tolerance);
+
+        for (node_id, node_rank) in result {
+            let (expected_id, expected_rank) = expected_entries[0];
+            expected_entries = &expected_entries[1..];
+
+            assert_eq!(
+                expected_id, node_id,
+                "Node id should be {} but was {}",
+                expected_id, node_id,
+            );
 
             assert!(
-                approx_eq!(f64, rank_cell.get(), expected_rank, epsilon = tolerance),
+                approx_eq!(
+                    f64,
+                    to_percentage(node_rank),
+                    expected_rank,
+                    epsilon = tolerance
+                ),
                 "Rank for {} should be {} but was {}",
-                id,
+                expected_id,
                 expected_rank,
-                rank_cell.get()
+                node_rank,
             );
         }
     }
@@ -57,12 +66,9 @@ mod tests {
         let mut page_rank = Pagerank::new(2);
         page_rank.link(0, 1)?;
 
-        let entered = Cell::new(false);
-        page_rank.rank(0.85, 0.0001, |_id, _rank| {
-            entered.set(true);
-        });
+        let result = page_rank.rank(0.85, 0.0001);
 
-        assert!(entered.get());
+        assert_ne!(0, result.len());
         Ok(())
     }
 
@@ -71,11 +77,11 @@ mod tests {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut page_rank = Pagerank::new(3);
         page_rank.link(0, 1)?;
-        let expected = vec![(0, 35.1), (1, 64.9)];
+        let expected = vec![(1, 64.9), (0, 35.1)];
         assert_rank(&mut page_rank, &expected, 0.0001);
 
         page_rank.link(1, 2)?;
-        let expected = vec![(0, 18.4), (1, 34.1), (2, 47.4)];
+        let expected = vec![(2, 47.4), (1, 34.1), (0, 18.4)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -86,10 +92,9 @@ mod tests {
         page_rank.link(0, 1)?;
         page_rank.link(1, 2)?;
         page_rank.clear();
-        println!("");
         page_rank.link(0, 1)?;
 
-        let expected = vec![(0, 35.1), (1, 64.9)];
+        let expected = vec![(1, 64.9), (0, 35.1)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -98,14 +103,12 @@ mod tests {
     fn test_should_not_fail_when_calculating_the_rank_of_an_empty_graph(
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut page_rank = Pagerank::new(1);
-        let mut entered = false;
 
-        page_rank.rank(0.85, 0.0001, |_id, _rank| {
-            entered = true;
-        });
+        let result = page_rank.rank(0.85, 0.0001);
 
-        assert!(
-            !entered,
+        assert_eq!(
+            0,
+            result.len(),
             "Rank calculation should not have entered the block for an empty graph."
         );
         Ok(())
@@ -119,7 +122,7 @@ mod tests {
         page_rank.link(0, 2)?;
         page_rank.link(1, 2)?;
 
-        let expected = vec![(0, 21.3), (1, 21.3), (2, 57.4)];
+        let expected = vec![(2, 57.4), (0, 21.3), (1, 21.3)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -134,7 +137,7 @@ mod tests {
         page_rank.link(1, 2)?;
         page_rank.link(1, 2)?; // Duplicate link
 
-        let expected = vec![(0, 21.3), (1, 21.3), (2, 57.4)];
+        let expected = vec![(2, 57.4), (0, 21.3), (1, 21.3)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -147,7 +150,7 @@ mod tests {
         page_rank.link(1, 2)?;
         page_rank.link(2, 2)?; // Node 2 links to itself, forming a star graph
 
-        let expected = vec![(0, 5.0), (1, 5.0), (2, 90.0)];
+        let expected = vec![(2, 90.0), (0, 5.0), (1, 5.0)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -175,7 +178,7 @@ mod tests {
         page_rank.link(1, 2)?;
         page_rank.link(2, 2)?; // Node 2 links to itself, forming a converging graph
 
-        let expected = vec![(0, 5.0), (1, 7.1), (2, 87.9)];
+        let expected = vec![(2, 87.9), (1, 7.1), (0, 5.0)];
         assert_rank(&mut page_rank, &expected, 0.0001);
         Ok(())
     }
@@ -204,12 +207,12 @@ mod tests {
         page_rank.link(10, 4)?;
 
         let expected = vec![
-            (0, 3.3),  // Node 'a'
             (1, 38.4), // Node 'b'
             (2, 34.3), // Node 'c'
-            (3, 3.9),  // Node 'd'
             (4, 8.1),  // Node 'e'
+            (3, 3.9),  // Node 'd'
             (5, 3.9),  // Node 'f'
+            (0, 3.3),  // Node 'a'
             (6, 1.6),  // Node 'g'
             (7, 1.6),  // Node 'h'
             (8, 1.6),  // Node 'i'
